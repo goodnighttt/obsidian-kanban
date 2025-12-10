@@ -185,6 +185,10 @@ const lang: Partial<Lang> = {
   'Sort by card text': '以卡片文本排序',
   'Sort by date': '以日期排序',
 
+  // === 新增语言 ===
+  'Preview card': '预览卡片',
+  'Copy card content': '复制卡片内容',
+
   // components/helpers/renderMarkdown.ts
   'Unable to find': '无法找到',
   'Open in default app': '在默认应用中打开',

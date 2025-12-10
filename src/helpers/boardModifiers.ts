@@ -14,6 +14,7 @@ import {
   updateParentEntity,
 } from 'src/dnd/util/data';
 
+import { PreviewModal } from '../components/Lane/PreviewModal';
 import { generateInstanceId } from '../components/helpers';
 import { Board, DataTypes, Item, Lane } from '../components/types';
 
@@ -31,6 +32,8 @@ export interface BoardModifiers {
   archiveLane: (path: Path) => void;
   archiveLaneItems: (path: Path) => void;
   deleteEntity: (path: Path) => void;
+  previewItem: (path: Path) => void; // 预览卡片功能
+  copyItemContent: (path: Path) => void; // 复制卡片内容功能
   updateItem: (path: Path, item: Item) => void;
   archiveItem: (path: Path) => void;
   duplicateEntity: (path: Path) => void;
@@ -216,6 +219,20 @@ export function getBoardModifiers(view: KanbanView, stateManager: StateManager):
 
         return removeEntity(boardData, path);
       });
+    },
+
+    previewItem: (path: Path) => {
+      const boardData = stateManager.state;
+      const item = getEntityFromPath(boardData, path);
+      const modal = new PreviewModal(view, stateManager, item);
+      modal.open();
+    },
+
+    copyItemContent: (path: Path) => {
+      const boardData = stateManager.state;
+      const item = getEntityFromPath(boardData, path);
+      console.log(item.data.titleRaw);
+      navigator.clipboard.writeText(item.data.titleRaw);
     },
 
     updateItem: (path: Path, item: Item) => {

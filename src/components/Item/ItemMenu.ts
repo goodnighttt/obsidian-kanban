@@ -122,6 +122,22 @@ export function useItemMenu({
               }
             });
         })
+
+        // 预览卡片功能
+        .addSeparator()
+        .addItem((i) => {
+          i.setIcon('lucide-eye')
+            .setTitle(t('Preview card'))
+            .onClick(() => boardModifiers.previewItem(path));
+        })
+
+        // 复制卡片内容功能
+        .addSeparator()
+        .addItem((i) => {
+          i.setIcon('lucide-clipboard')
+            .setTitle(t('Copy card content'))
+            .onClick(() => boardModifiers.copyItemContent(path));
+        })
         .addSeparator();
 
       if (/\n/.test(item.data.titleRaw)) {

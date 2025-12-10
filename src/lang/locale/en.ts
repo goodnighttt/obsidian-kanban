@@ -219,6 +219,8 @@ const en = {
   // components/Item/ItemMenu.ts
   'Edit card': 'Edit card',
   'New note from card': 'New note from card',
+  'Preview card': 'Preview card',
+  'Copy card content': 'Copy card content',
   'Archive card': 'Archive card',
   'Delete card': 'Delete card',
   'Edit date': 'Edit date',
