@@ -231,7 +231,6 @@ export function getBoardModifiers(view: KanbanView, stateManager: StateManager):
     copyItemContent: (path: Path) => {
       const boardData = stateManager.state;
       const item = getEntityFromPath(boardData, path);
-      console.log(item.data.titleRaw);
       navigator.clipboard.writeText(item.data.titleRaw);
     },
 

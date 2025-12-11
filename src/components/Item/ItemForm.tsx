@@ -1,4 +1,5 @@
 import { EditorView } from '@codemirror/view';
+import { moment } from 'obsidian';
 import { Dispatch, StateUpdater, useContext, useRef } from 'preact/hooks';
 import useOnclickOutside from 'react-cool-onclickoutside';
 import { t } from 'src/lang/helpers';
@@ -26,7 +27,25 @@ export function ItemForm({ addItems, editState, setEditState, hideButton }: Item
   });
 
   const createItem = (title: string) => {
-    addItems([stateManager.getNewItem(title, ' ')]);
+    // 获取日期和时间格式设置
+    const dateTrigger = stateManager.getSetting('date-trigger') || '@';
+    const timeTrigger = stateManager.getSetting('time-trigger') || '@@';
+    const dateFormat = stateManager.getSetting('date-format') || 'YYYY-MM-DD';
+    const timeFormat = stateManager.getSetting('time-format') || 'HH:mm';
+
+    // 获取当前日期和时间
+    const now = moment();
+    const dateStr = now.format(dateFormat);
+    const timeStr = now.format(timeFormat);
+
+    // 构建包含日期和时间的标题
+    // 格式：标题\n{dateTrigger}{日期} {timeTrigger}{时间}
+    // 日期时间放在下一行，方便之后编辑时添加正文
+    const trimmedTitle = title.trim();
+    const dateTimeLine = `${dateTrigger}{${dateStr}} ${timeTrigger}{${timeStr}}`;
+    const titleWithDateTime = trimmedTitle ? `${trimmedTitle}\n${dateTimeLine}` : dateTimeLine;
+
+    addItems([stateManager.getNewItem(titleWithDateTime, ' ')]);
     const cm = editorRef.current;
     if (cm) {
       cm.dispatch({
