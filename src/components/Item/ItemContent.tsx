@@ -24,6 +24,7 @@ import { c, useGetDateColorFn, useGetTagColorFn } from '../helpers';
 import { EditState, EditingState, Item, isEditing } from '../types';
 import { DateAndTime, RelativeDate } from './DateAndTime';
 import { InlineMetadata } from './InlineMetadata';
+import { ItemCustomMetadata } from './ItemCustomMetadata';
 import {
   constructDatePicker,
   constructMenuDatePickerOnChange,
@@ -306,6 +307,7 @@ export const ItemContent = memo(function ItemContent({
           <Tags tags={item.data.metadata.tags} searchQuery={searchQuery} />
         </div>
       )}
+      <ItemCustomMetadata item={item} searchQuery={searchQuery} />
     </div>
   );
 });

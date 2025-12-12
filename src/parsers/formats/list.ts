@@ -33,6 +33,7 @@ import { hydrateItem, preprocessTitle } from '../helpers/hydrateBoard';
 import { extractInlineFields, taskFields } from '../helpers/inlineMetadata';
 import {
   addBlockId,
+  addItemMetadata,
   dedentNewLines,
   executeDeletion,
   indentNewLines,
@@ -89,6 +90,20 @@ export function listItemToItemData(stateManager: StateManager, md: string, item:
     }
   );
 
+  // 提取item元数据（从注释格式）
+  let itemMetadata: { [key: string]: string } | undefined = undefined;
+  const itemMetadataMatch = itemContent.match(/<!--\s*kanban-item-metadata:\s*({[^}]*})\s*-->/);
+  if (itemMetadataMatch) {
+    try {
+      const metadataJson = itemMetadataMatch[1];
+      itemMetadata = JSON.parse(metadataJson);
+      // 从itemContent中移除元数据注释
+      itemContent = itemContent.replace(itemMetadataMatch[0], '').trim();
+    } catch (e) {
+      console.error('Failed to parse item metadata:', e);
+    }
+  }
+
   const itemData: ItemData = {
     titleRaw: removeBlockId(dedentNewLines(replaceBrs(itemContent))),
     blockId: undefined,
@@ -105,6 +120,7 @@ export function listItemToItemData(stateManager: StateManager, md: string, item:
       file: undefined,
       fileMetadata: undefined,
       fileMetadataOrder: undefined,
+      itemMetadata,
     },
     checked: item.checked,
     checkChar: item.checked ? item.checkChar || ' ' : ' ',
@@ -401,7 +417,8 @@ export function reparseBoard(stateManager: StateManager, board: Board) {
 }
 
 function itemToMd(item: Item) {
-  return `- [${item.data.checkChar}] ${addBlockId(indentNewLines(item.data.titleRaw), item)}`;
+  const content = addBlockId(indentNewLines(item.data.titleRaw), item);
+  return `- [${item.data.checkChar}] ${addItemMetadata(content, item)}`;
 }
 
 function laneToMd(lane: Lane) {

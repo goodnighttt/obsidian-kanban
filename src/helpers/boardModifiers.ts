@@ -311,10 +311,57 @@ export function getBoardModifiers(view: KanbanView, stateManager: StateManager):
 
     updateItem: (path: Path, item: Item) => {
       stateManager.setState((boardData) => {
-        return updateParentEntity(boardData, path, {
+        // 先更新item
+        const updatedBoard = updateParentEntity(boardData, path, {
           children: {
             [path[path.length - 1]]: {
               $set: item,
+            },
+          },
+        });
+
+        // 收集整个看板中所有item的属性值并更新到设置中
+        const propertyValues: { [key: string]: Set<string> } = {};
+        const collectMetadata = (items: Item[]) => {
+          items.forEach((item) => {
+            const metadata = item.data.metadata.itemMetadata;
+            if (metadata) {
+              Object.keys(metadata).forEach((key) => {
+                const value = metadata[key];
+                if (value && value.trim()) {
+                  if (!propertyValues[key]) {
+                    propertyValues[key] = new Set();
+                  }
+                  propertyValues[key].add(value);
+                }
+              });
+            }
+          });
+        };
+
+        // 收集所有lane中的item
+        updatedBoard.children.forEach((lane) => {
+          collectMetadata(lane.children);
+        });
+
+        // 收集归档的item
+        if (updatedBoard.data.archive) {
+          collectMetadata(updatedBoard.data.archive);
+        }
+
+        // 转换为数组格式并排序
+        const propertyValuesArray: { [key: string]: string[] } = {};
+        Object.keys(propertyValues).forEach((key) => {
+          propertyValuesArray[key] = Array.from(propertyValues[key]).sort();
+        });
+
+        // 更新设置
+        return update(updatedBoard, {
+          data: {
+            settings: {
+              'item-property-values': {
+                $set: propertyValuesArray,
+              },
             },
           },
         });

@@ -196,6 +196,24 @@ const lang: Partial<Lang> = {
 
   // components/Editor/MarkdownEditor.tsx
   Submit: '提交',
+
+  // ItemCustomMetadata
+  'Add property': '添加属性',
+  'Edit property': '编辑属性',
+  'Remove property': '删除属性',
+  'Property key': '属性键',
+  'Property value': '属性值',
+  'Select value': '选择值',
+  'Search values...': '搜索值...',
+  'No values found': '未找到值',
+  'Click to select value': '点击选择值',
+  'Item Property Keys': '卡片属性键',
+  'Define custom property keys for cards. These properties can be added to cards and will be displayed separately from page metadata.':
+    '定义卡片的自定义属性键。这些属性可以添加到卡片中，并将与页面元数据分开显示。',
+  'Add property key': '添加属性键',
+  'No value': '未设置',
+  'Clear value': '清除值',
+  'Click to add value': '点击添加值',
 };
 
 export default lang;

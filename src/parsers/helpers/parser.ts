@@ -45,6 +45,21 @@ export function addBlockId(str: string, item: Item) {
   return lines.join('\n');
 }
 
+export function addItemMetadata(str: string, item: Item) {
+  const itemMetadata = item.data.metadata.itemMetadata;
+  if (!itemMetadata || Object.keys(itemMetadata).length === 0) {
+    return str;
+  }
+
+  const metadataJson = JSON.stringify(itemMetadata);
+  const metadataComment = `<!-- kanban-item-metadata: ${metadataJson} -->`;
+  
+  // 移除可能已存在的元数据注释
+  const cleanedStr = str.replace(/<!--\s*kanban-item-metadata:\s*{[^}]*}\s*-->/g, '').trim();
+  
+  return cleanedStr + '\n' + metadataComment;
+}
+
 export function removeBlockId(str: string) {
   const lines = str.split(/(?:\r\n|\n)/g);
 

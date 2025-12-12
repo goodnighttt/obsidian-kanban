@@ -9,6 +9,7 @@ import { t } from 'src/lang/helpers';
 import { BoardModifiers } from '../../helpers/boardModifiers';
 import { applyTemplate, escapeRegExpStr, generateInstanceId } from '../helpers';
 import { EditState, Item } from '../types';
+import { PropertyEditorModal } from './PropertyEditorModal';
 import {
   constructDatePicker,
   constructMenuDatePickerOnChange,
@@ -285,6 +286,84 @@ export function useItemMenu({
               });
           });
         }
+      }
+
+      menu.addSeparator();
+
+      // 添加属性相关菜单
+      const itemMetadata = item.data.metadata.itemMetadata || {};
+      const hasProperties = Object.keys(itemMetadata).length > 0;
+
+      menu.addItem((i) => {
+        i.setIcon('lucide-tag')
+          .setTitle(t('Add property'))
+          .onClick(() => {
+            const modal = new PropertyEditorModal(
+              stateManager,
+              boardModifiers,
+              item,
+              path,
+              null,
+              (updatedItem) => {
+                boardModifiers.updateItem(path, updatedItem);
+              }
+            );
+            modal.open();
+          });
+      });
+
+      if (hasProperties) {
+        menu.addItem((i) => {
+          const submenu = (i as any)
+            .setTitle(t('Edit property'))
+            .setIcon('lucide-edit')
+            .setSubmenu();
+
+          Object.keys(itemMetadata).forEach((key) => {
+            submenu.addItem((subItem) => {
+              subItem.setTitle(`${key}: ${itemMetadata[key]}`).onClick(() => {
+                const modal = new PropertyEditorModal(
+                  stateManager,
+                  boardModifiers,
+                  item,
+                  path,
+                  key,
+                  (updatedItem) => {
+                    boardModifiers.updateItem(path, updatedItem);
+                  }
+                );
+                modal.open();
+              });
+            });
+          });
+        });
+
+        menu.addItem((i) => {
+          const submenu = (i as any)
+            .setTitle(t('Remove property'))
+            .setIcon('lucide-trash-2')
+            .setSubmenu();
+
+          Object.keys(itemMetadata).forEach((key) => {
+            submenu.addItem((subItem) => {
+              subItem.setTitle(`${key}: ${itemMetadata[key]}`).onClick(() => {
+                const newMetadata = { ...itemMetadata };
+                delete newMetadata[key];
+                const updatedItem = {
+                  ...item,
+                  data: {
+                    ...item.data,
+                    metadata: {
+                      ...item.data.metadata,
+                      itemMetadata: Object.keys(newMetadata).length > 0 ? newMetadata : undefined,
+                    },
+                  },
+                };
+                boardModifiers.updateItem(path, updatedItem);
+              });
+            });
+          });
+        });
       }
 
       menu.addSeparator();

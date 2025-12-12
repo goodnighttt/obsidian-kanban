@@ -277,6 +277,24 @@ const en = {
 
   // components/Editor/MarkdownEditor.tsx
   Submit: 'Submit',
+
+  // ItemCustomMetadata
+  'Add property': 'Add property',
+  'Edit property': 'Edit property',
+  'Remove property': 'Remove property',
+  'Property key': 'Property key',
+  'Property value': 'Property value',
+  'Select value': 'Select value',
+  'Search values...': 'Search values...',
+  'No values found': 'No values found',
+  'Click to select value': 'Click to select value',
+  'Item Property Keys': 'Item Property Keys',
+  'Define custom property keys for cards. These properties can be added to cards and will be displayed separately from page metadata.':
+    'Define custom property keys for cards. These properties can be added to cards and will be displayed separately from page metadata.',
+  'Add property key': 'Add property key',
+  'No value': 'No value',
+  'Clear value': 'Clear value',
+  'Click to add value': 'Click to add value',
 };
 
 export type Lang = typeof en;

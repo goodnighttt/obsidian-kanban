@@ -64,6 +64,8 @@ export interface KanbanSettings {
   'full-list-lane-width'?: boolean;
   'hide-card-count'?: boolean;
   'inline-metadata-position'?: 'body' | 'footer' | 'metadata-table';
+  'item-property-keys'?: string[];
+  'item-property-values'?: { [key: string]: string[] };
   'lane-width'?: number;
   'link-date-to-daily-note'?: boolean;
   'list-collapse'?: boolean[];
@@ -112,6 +114,8 @@ export const settingKeyLookup: Set<keyof KanbanSettings> = new Set([
   'full-list-lane-width',
   'hide-card-count',
   'inline-metadata-position',
+  'item-property-keys',
+  'item-property-values',
   'lane-width',
   'link-date-to-daily-note',
   'list-collapse',
@@ -1287,6 +1291,89 @@ export class SettingsManager {
           cleanupMetadataSettings(setting.settingEl);
         }
       });
+    });
+
+    contentEl.createEl('br');
+    contentEl.createEl('h4', { text: t('Item Property Keys') });
+    contentEl.createEl('p', {
+      cls: c('metadata-setting-desc'),
+      text: t(
+        'Define custom property keys for cards. These properties can be added to cards and will be displayed separately from page metadata.'
+      ),
+    });
+
+    new Setting(contentEl).then((setting) => {
+      const [value] = this.getSetting('item-property-keys', local);
+      const propertyKeys: string[] = (value as string[]) || [];
+
+      const container = setting.settingEl.createDiv();
+      container.addClass(c('item-property-keys-container'));
+
+      const updatePropertyKeys = (keys: string[]) => {
+        this.applySettingsUpdate({
+          'item-property-keys': {
+            $set: keys,
+          },
+        });
+        renderPropertyKeys(container, keys, updatePropertyKeys);
+      };
+
+      const renderPropertyKeys = (
+        containerEl: HTMLElement,
+        keys: string[],
+        onChange: (keys: string[]) => void
+      ) => {
+        containerEl.empty();
+
+        keys.forEach((key, index) => {
+          const keyRow = containerEl.createDiv();
+          keyRow.addClass(c('item-property-key-row'));
+
+          const input = keyRow.createEl('input', { type: 'text', value: key });
+          input.addClass(c('item-property-key-input'));
+          input.placeholder = t('Property key');
+          input.oninput = (e) => {
+            const newKeys = [...keys];
+            newKeys[index] = (e.target as HTMLInputElement).value;
+            onChange(newKeys);
+          };
+
+          const deleteBtn = keyRow.createEl('button');
+          deleteBtn.addClass('clickable-icon');
+          deleteBtn.innerHTML =
+            '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"></path><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"></path></svg>';
+          deleteBtn.onclick = () => {
+            const newKeys = keys.filter((_, i) => i !== index);
+            onChange(newKeys);
+          };
+        });
+
+        const addRow = containerEl.createDiv();
+        addRow.addClass(c('item-property-key-add-row'));
+
+        const addInput = addRow.createEl('input', {
+          type: 'text',
+          placeholder: t('Add property key'),
+        });
+        addInput.addClass(c('item-property-key-input'));
+        addInput.onkeydown = (e) => {
+          if (e.key === 'Enter' && addInput.value.trim()) {
+            onChange([...keys, addInput.value.trim()]);
+            addInput.value = '';
+          }
+        };
+
+        const addBtn = addRow.createEl('button');
+        addBtn.textContent = t('Add key');
+        addBtn.onclick = () => {
+          if (addInput.value.trim()) {
+            onChange([...keys, addInput.value.trim()]);
+            addInput.value = '';
+          }
+        };
+      };
+
+      renderPropertyKeys(container, propertyKeys, updatePropertyKeys);
     });
 
     contentEl.createEl('h4', { text: t('Board Header Buttons') });

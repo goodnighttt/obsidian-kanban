@@ -29,6 +29,11 @@ export interface DataKey {
   containsMarkdown: boolean;
 }
 
+export interface ItemPropertyKey {
+  key: string;
+  label?: string;
+}
+
 export interface TagColor {
   tagKey: string;
   color: string;
@@ -75,6 +80,7 @@ export interface ItemMetadata {
   fileMetadata?: FileMetadata;
   fileMetadataOrder?: string[];
   inlineMetadata?: InlineField[];
+  itemMetadata?: { [key: string]: string };
 }
 
 export interface ItemData {
