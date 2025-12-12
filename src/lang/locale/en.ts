@@ -221,6 +221,7 @@ const en = {
   'New note from card': 'New note from card',
   'Preview card': 'Preview card',
   'Copy card content': 'Copy card content',
+  'Share as image': 'Share as image',
   'Archive card': 'Archive card',
   'Delete card': 'Delete card',
   'Edit date': 'Edit date',

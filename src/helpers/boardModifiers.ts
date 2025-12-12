@@ -14,8 +14,10 @@ import {
   updateParentEntity,
 } from 'src/dnd/util/data';
 
-import { PreviewModal } from '../components/Lane/PreviewModal';
+import { PreviewModal } from '../components/Item/PreviewModal';
+import { ShareImageModal } from '../components/Item/ShareImageModal';
 import { generateInstanceId } from '../components/helpers';
+import { c } from '../components/helpers';
 import { Board, DataTypes, Item, Lane } from '../components/types';
 
 export interface BoardModifiers {
@@ -34,6 +36,7 @@ export interface BoardModifiers {
   deleteEntity: (path: Path) => void;
   previewItem: (path: Path) => void; // 预览卡片功能
   copyItemContent: (path: Path) => void; // 复制卡片内容功能
+  shareItemAsImage: (path: Path, element?: HTMLElement) => Promise<void>; // 分享图片功能
   updateItem: (path: Path, item: Item) => void;
   archiveItem: (path: Path) => void;
   duplicateEntity: (path: Path) => void;
@@ -232,6 +235,78 @@ export function getBoardModifiers(view: KanbanView, stateManager: StateManager):
       const boardData = stateManager.state;
       const item = getEntityFromPath(boardData, path);
       navigator.clipboard.writeText(item.data.titleRaw);
+    },
+
+    shareItemAsImage: async (path: Path, element?: HTMLElement) => {
+      const boardData = stateManager.state;
+      const item = getEntityFromPath(boardData, path);
+
+      // 如果没有传入元素，尝试通过 item.id 查找
+      let cardElement = element;
+      if (!cardElement) {
+        const win = view.getWindow();
+        const scopeId = view.id;
+        const entityId = `${scopeId}-${item.id}`;
+
+        // 方法1: 通过 data-hitboxid 查找（EntityManager 设置的）
+        const measureNode = win.document.querySelector(`[data-hitboxid="${entityId}"]`);
+        if (measureNode) {
+          const itemWrapper = measureNode.closest(`.${c('item-wrapper')}`);
+          if (itemWrapper) {
+            cardElement = itemWrapper.querySelector(`.${c('item')}`) as HTMLElement;
+          }
+        }
+
+        // 方法2: 如果方法1失败，遍历所有 item 元素查找匹配的内容
+        if (!cardElement) {
+          const allItemWrappers = win.document.querySelectorAll(`.${c('item-wrapper')}`);
+          for (const wrapper of Array.from(allItemWrappers)) {
+            const itemContent = wrapper.querySelector(`.${c('item-content-wrapper')}`);
+            if (itemContent) {
+              // 检查内容是否匹配（通过检查第一个文本节点）
+              const textContent = itemContent.textContent?.trim() || '';
+              const itemTitle = item.data.titleRaw.split('\n')[0].trim();
+              if (textContent.includes(itemTitle) || itemTitle.includes(textContent)) {
+                cardElement = wrapper.querySelector(`.${c('item')}`) as HTMLElement;
+                break;
+              }
+            }
+          }
+        }
+
+        // 方法3: 如果还是找不到，使用第一个 item 元素作为备选
+        if (!cardElement) {
+          cardElement = win.document.querySelector(`.${c('item')}`) as HTMLElement;
+        }
+      }
+
+      if (!cardElement) {
+        console.error('无法找到卡片元素');
+        return;
+      }
+
+      try {
+        // 动态导入 html2canvas
+        const html2canvas = (await import('html2canvas')).default;
+
+        // 使用 html2canvas 将元素转换为图片
+        const canvas = await html2canvas(cardElement, {
+          backgroundColor: null,
+          scale: 4, // 提高图片质量
+          logging: false,
+          useCORS: true,
+          allowTaint: true,
+        });
+
+        // 将 canvas 转换为 base64 图片
+        const imageDataUrl = canvas.toDataURL('image/png');
+
+        // 打开分享图片模态窗
+        const modal = new ShareImageModal(view, stateManager, item, imageDataUrl);
+        modal.open();
+      } catch (error) {
+        console.error('生成图片失败:', error);
+      }
     },
 
     updateItem: (path: Path, item: Item) => {

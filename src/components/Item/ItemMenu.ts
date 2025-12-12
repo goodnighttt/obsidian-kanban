@@ -138,6 +138,14 @@ export function useItemMenu({
             .setTitle(t('Copy card content'))
             .onClick(() => boardModifiers.copyItemContent(path));
         })
+        // 分享图片功能
+        .addItem((i) => {
+          i.setIcon('lucide-image')
+            .setTitle(t('Share as image'))
+            .onClick(async () => {
+              await boardModifiers.shareItemAsImage(path);
+            });
+        })
         .addSeparator();
 
       if (/\n/.test(item.data.titleRaw)) {

@@ -188,6 +188,7 @@ const lang: Partial<Lang> = {
   // === 新增语言 ===
   'Preview card': '预览卡片',
   'Copy card content': '复制卡片内容',
+  'Share as image': '分享图片',
 
   // components/helpers/renderMarkdown.ts
   'Unable to find': '无法找到',
