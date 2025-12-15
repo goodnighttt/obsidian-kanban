@@ -91,14 +91,26 @@ export function listItemToItemData(stateManager: StateManager, md: string, item:
   );
 
   // 提取item元数据（从注释格式）
+  // 支持多行的元数据注释，每个属性-值单独一行
   let itemMetadata: { [key: string]: string } | undefined = undefined;
-  const itemMetadataMatch = itemContent.match(/<!--\s*kanban-item-metadata:\s*({[^}]*})\s*-->/);
-  if (itemMetadataMatch) {
+
+  // 匹配所有元数据注释行（支持多行，每行一个属性）
+  const metadataMatches = itemContent.matchAll(/<!--\s*kanban-item-metadata:\s*({[^]*?})\s*-->/g);
+  const metadataArray = Array.from(metadataMatches);
+
+  if (metadataArray.length > 0) {
     try {
-      const metadataJson = itemMetadataMatch[1];
-      itemMetadata = JSON.parse(metadataJson);
-      // 从itemContent中移除元数据注释
-      itemContent = itemContent.replace(itemMetadataMatch[0], '').trim();
+      itemMetadata = {};
+      // 合并所有元数据注释中的属性
+      for (const match of metadataArray) {
+        const metadataJson = match[1];
+        const parsed = JSON.parse(metadataJson);
+        Object.assign(itemMetadata, parsed);
+      }
+      // 从itemContent中移除所有元数据注释
+      for (const match of metadataArray) {
+        itemContent = itemContent.replace(match[0], '').trim();
+      }
     } catch (e) {
       console.error('Failed to parse item metadata:', e);
     }
