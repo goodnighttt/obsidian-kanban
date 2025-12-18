@@ -10,6 +10,32 @@ import { c } from '../helpers';
 import { Item } from '../types';
 import { extractDateTimeAndContent } from './ItemContent';
 
+/**
+ * SimpleDateTimeDisplay 组件（用于预览）
+ * 简单的日期时间显示，不受 move-dates 设置影响
+ */
+function SimpleDateTimeDisplay({ item, stateManager }: { item: Item; stateManager: StateManager }) {
+  const dateDisplayFormat = stateManager.getSetting('date-display-format');
+  const timeFormat = stateManager.getSetting('time-format');
+
+  const targetDate = item.data.metadata.time ?? item.data.metadata.date;
+
+  if (!targetDate) return null;
+
+  const hasDate = !!item.data.metadata.date;
+  const hasTime = !!item.data.metadata.time;
+  const dateDisplayStr = targetDate.format(dateDisplayFormat);
+  const timeDisplayStr = hasTime ? targetDate.format(timeFormat) : null;
+
+  return (
+    <span className={c('item-metadata-date-wrapper') + ' ' + c('date')}>
+      {hasDate && <span className={c('item-metadata-date')}>{dateDisplayStr}</span>}
+      {hasDate && hasTime && ' '}
+      {hasTime && <span className={c('item-metadata-time')}>{timeDisplayStr}</span>}
+    </span>
+  );
+}
+
 export class PreviewModal extends Modal {
   view: KanbanView;
   stateManager: StateManager;
@@ -56,16 +82,19 @@ export class PreviewModal extends Modal {
     const itemContent = itemWrapper.createDiv();
     itemContent.className = c('preview-item-content');
 
-    // 使用 Preact 渲染 MarkdownRenderer
-    const renderContainer = itemContent.createDiv();
-    this.renderContainers.push(renderContainer);
-    const boardModifiers = getBoardModifiers(this.view, this.stateManager);
-
-    // 提取不含日期时间的内容进行预览
+    // 提取日期时间和正文内容
     const { contentWithoutDateTime } = extractDateTimeAndContent(
       this.item.data.titleRaw || this.item.data.title,
       this.stateManager
     );
+
+    // 检查是否有日期或时间
+    const hasDateTime = !!(this.item.data.metadata.date || this.item.data.metadata.time);
+
+    // 使用 Preact 渲染正文内容
+    const renderContainer = itemContent.createDiv();
+    this.renderContainers.push(renderContainer);
+    const boardModifiers = getBoardModifiers(this.view, this.stateManager);
 
     render(
       <KanbanContext.Provider
@@ -84,6 +113,29 @@ export class PreviewModal extends Modal {
       </KanbanContext.Provider>,
       renderContainer
     );
+
+    // 如果有日期时间，显示日期时间区域（在正文下方）
+    if (hasDateTime) {
+      // 添加分隔线
+      const separator = itemContent.createDiv();
+      separator.className = c('preview-content-separator');
+      separator.style.height = '1px';
+      separator.style.background = 'var(--background-modifier-border)';
+      separator.style.margin = '12px 0';
+
+      const dateTimeSection = itemContent.createDiv();
+      dateTimeSection.className = c('preview-datetime-section');
+      dateTimeSection.style.padding = '8px 0';
+
+      // 使用 Preact 渲染日期时间组件
+      const dateTimeContainer = dateTimeSection.createDiv();
+      this.renderContainers.push(dateTimeContainer);
+
+      render(
+        <SimpleDateTimeDisplay item={this.item} stateManager={this.stateManager} />,
+        dateTimeContainer
+      );
+    }
   }
 
   onClose() {

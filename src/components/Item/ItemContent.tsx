@@ -532,30 +532,11 @@ export const ItemContent = memo(function ItemContent({
     // 保存日期时间行到 ref，供保存时使用
     dateTimeLineRef.current = dateTimeLine;
 
+    // 检查是否有日期或时间
+    const hasDateTime = !!(item.data.metadata.date || item.data.metadata.time);
+
     return (
       <div className={c('item-input-wrapper')}>
-        {/* 
-          日期时间显示区域 - 独立显示，视觉上分离
-          
-          功能说明：
-          - 只在存在日期时间时显示
-          - 使用 DateAndTime 组件渲染（只读显示）
-          - 带有独立的样式类，提供视觉分隔
-          - 支持点击修改日期/时间
-          - 编辑正文时不会触碰到这个区域
-        */}
-        {dateTimeLine && (
-          <div className={c('item-edit-datetime-section')}>
-            <DateAndTime
-              item={item}
-              stateManager={stateManager}
-              filePath={filePath}
-              onEditDate={onEditDate}
-              onEditTime={onEditTime}
-              getDateColor={getDateColor}
-            />
-          </div>
-        )}
         {/* 
           正文编辑区域 - 只编辑正文，不包含日期时间
           
@@ -580,6 +561,30 @@ export const ItemContent = memo(function ItemContent({
             }
           }}
         />
+
+        {/* 
+          日期时间显示区域 - 独立显示在正文下方，视觉上分离
+          
+          功能说明：
+          - 只在存在日期时间时显示
+          - 使用 SimpleDateTimeDisplay 组件渲染（不受 move-dates 设置影响）
+          - 带有独立的样式类，提供视觉分隔
+          - 支持点击修改日期/时间
+          - 编辑正文时不会触碰到这个区域
+        */}
+        {hasDateTime && <div className={c('item-content-separator')}></div>}
+        {hasDateTime && (
+          <div className={c('item-edit-datetime-section')}>
+            <DateAndTime
+              item={item}
+              stateManager={stateManager}
+              filePath={filePath}
+              getDateColor={getDateColor}
+              onEditDate={onEditDate}
+              onEditTime={onEditTime}
+            />
+          </div>
+        )}
       </div>
     );
   }
@@ -588,10 +593,22 @@ export const ItemContent = memo(function ItemContent({
    * 显示模式渲染
    *
    * 当卡片不在编辑状态时，显示卡片内容
+   * 将日期时间与正文内容分离显示
    */
+
+  // 提取日期时间行和正文内容
+  const { dateTimeLine, contentWithoutDateTime } = extractDateTimeAndContent(
+    item.data.titleRaw,
+    stateManager
+  );
+
+  // 检查是否有日期或时间
+  const hasDateTime = !!(item.data.metadata.date || item.data.metadata.time);
+
   return (
     <div onClick={onWrapperClick} className={c('item-title')}>
       {/* 
+        正文内容区域
         根据 isStatic 标志选择不同的渲染器
         - isStatic: 使用克隆的预览渲染器（用于拖拽预览等场景）
         - 否则: 使用普通渲染器（正常显示）
@@ -605,7 +622,7 @@ export const ItemContent = memo(function ItemContent({
         <MarkdownClonedPreviewRenderer
           entityId={item.id}
           className={c('item-markdown')}
-          markdownString={item.data.title}
+          markdownString={contentWithoutDateTime || item.data.title}
           searchQuery={searchQuery}
           onPointerUp={onCheckboxContainerClick}
         />
@@ -613,32 +630,47 @@ export const ItemContent = memo(function ItemContent({
         <MarkdownRenderer
           entityId={item.id}
           className={c('item-markdown')}
-          markdownString={item.data.title}
+          markdownString={contentWithoutDateTime || item.data.title}
           searchQuery={searchQuery}
           onPointerUp={onCheckboxContainerClick}
         />
       )}
+
+      {/* 分隔线（仅在有日期时间时显示） */}
+      {hasDateTime && <div className={c('item-content-separator')}></div>}
+
       {/* 
-        元数据区域
-        显示卡片的元数据信息（如果 showMetadata 为 true）
-        
-        包含：
-        1. RelativeDate: 相对日期显示（如"今天"、"明天"）
-        2. DateAndTime: 日期和时间显示（可点击编辑）
-        3. InlineMetadata: 内联元数据（自定义字段）
-        4. Tags: 标签列表（可点击搜索）
+        日期时间显示区域（如果存在）
+        显示在正文下方，与正文用分隔线分开
       */}
-      {showMetadata && (
-        <div className={c('item-metadata')}>
-          {/* 相对日期显示（如"今天"、"2天后"） */}
-          <RelativeDate item={item} stateManager={stateManager} />
-          {/* 日期和时间显示（支持点击编辑） */}
+      {hasDateTime && (
+        <div className={c('item-datetime-display-section')}>
           <DateAndTime
             item={item}
             stateManager={stateManager}
             filePath={filePath}
             getDateColor={getDateColor}
+            onEditDate={onEditDate}
+            onEditTime={onEditTime}
           />
+        </div>
+      )}
+
+      {/* 
+        元数据区域
+        显示卡片的其他元数据信息（如果 showMetadata 为 true）
+        
+        包含：
+        1. RelativeDate: 相对日期显示（如"今天"、"明天"）
+        2. InlineMetadata: 内联元数据（自定义字段）
+        3. Tags: 标签列表（可点击搜索）
+        
+        注意：DateAndTime 已经在下方独立显示，这里不再重复显示
+      */}
+      {showMetadata && (
+        <div className={c('item-metadata')}>
+          {/* 相对日期显示（如"今天"、"2天后"） */}
+          <RelativeDate item={item} stateManager={stateManager} />
           {/* 内联元数据显示 */}
           <InlineMetadata item={item} stateManager={stateManager} />
           {/* 标签列表 */}
