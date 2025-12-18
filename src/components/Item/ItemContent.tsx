@@ -333,7 +333,7 @@ export function Tags({
  * - 普通格式：@{2024-12-16} @@{14:30}
  * - 链接格式：@[[2024-12-16]] @@{14:30}
  */
-function extractDateTimeAndContent(
+export function extractDateTimeAndContent(
   titleRaw: string,
   stateManager: StateManager
 ): { dateTimeLine: string; contentWithoutDateTime: string } {

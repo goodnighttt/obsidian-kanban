@@ -14,6 +14,7 @@ import {
   updateParentEntity,
 } from 'src/dnd/util/data';
 
+import { extractDateTimeAndContent } from '../components/Item/ItemContent';
 import { PreviewModal } from '../components/Item/PreviewModal';
 import { ShareImageModal } from '../components/Item/ShareImageModal';
 import { generateInstanceId } from '../components/helpers';
@@ -234,7 +235,12 @@ export function getBoardModifiers(view: KanbanView, stateManager: StateManager):
     copyItemContent: (path: Path) => {
       const boardData = stateManager.state;
       const item = getEntityFromPath(boardData, path);
-      navigator.clipboard.writeText(item.data.titleRaw);
+      // 使用 extractDateTimeAndContent 提取不含日期时间的内容
+      const { contentWithoutDateTime } = extractDateTimeAndContent(
+        item.data.titleRaw,
+        stateManager
+      );
+      navigator.clipboard.writeText(contentWithoutDateTime);
     },
 
     shareItemAsImage: async (path: Path, element?: HTMLElement) => {

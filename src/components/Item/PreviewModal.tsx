@@ -8,6 +8,7 @@ import { MarkdownRenderer } from '../MarkdownRenderer/MarkdownRenderer';
 import { KanbanContext } from '../context';
 import { c } from '../helpers';
 import { Item } from '../types';
+import { extractDateTimeAndContent } from './ItemContent';
 
 export class PreviewModal extends Modal {
   view: KanbanView;
@@ -59,6 +60,13 @@ export class PreviewModal extends Modal {
     const renderContainer = itemContent.createDiv();
     this.renderContainers.push(renderContainer);
     const boardModifiers = getBoardModifiers(this.view, this.stateManager);
+
+    // 提取不含日期时间的内容进行预览
+    const { contentWithoutDateTime } = extractDateTimeAndContent(
+      this.item.data.titleRaw || this.item.data.title,
+      this.stateManager
+    );
+
     render(
       <KanbanContext.Provider
         value={{
@@ -71,7 +79,7 @@ export class PreviewModal extends Modal {
         <MarkdownRenderer
           entityId={undefined}
           className={c('preview-markdown')}
-          markdownString={this.item.data.titleRaw || this.item.data.title}
+          markdownString={contentWithoutDateTime}
         />
       </KanbanContext.Provider>,
       renderContainer
