@@ -22,8 +22,10 @@ import { ItemContent } from './ItemContent';
 import { useItemMenu } from './ItemMenu';
 import { ItemMenuButton } from './ItemMenuButton';
 import { ItemOverviewButton } from './ItemOverviewButton'; // 预览按钮
+import { ItemCopyContentButton } from './ItemCopyContentButton'; // 复制内容按钮
 import { ItemMetadata } from './MetadataTable';
 import { getItemClassModifiers } from './helpers';
+
 
 export interface DraggableItemProps {
   item: Item;
@@ -134,6 +136,7 @@ const ItemInner = memo(function ItemInner({
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
           <ItemMenuButton editState={editState} setEditState={setEditState} showMenu={showItemMenu} />
           <ItemOverviewButton item={item} path={path} boardModifiers={boardModifiers} />
+          <ItemCopyContentButton item={item} path={path} boardModifiers={boardModifiers} />
         </div>
       </div>
       <ItemMetadata searchQuery={isMatch ? searchQuery : undefined} item={item} />
