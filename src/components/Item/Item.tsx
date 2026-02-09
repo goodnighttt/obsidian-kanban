@@ -21,6 +21,7 @@ import { ItemCheckbox } from './ItemCheckbox';
 import { ItemContent } from './ItemContent';
 import { useItemMenu } from './ItemMenu';
 import { ItemMenuButton } from './ItemMenuButton';
+import { ItemOverviewButton } from './ItemOverviewButton'; // 预览按钮
 import { ItemMetadata } from './MetadataTable';
 import { getItemClassModifiers } from './helpers';
 
@@ -130,7 +131,10 @@ const ItemInner = memo(function ItemInner({
           editState={editState}
           isStatic={isStatic}
         />
-        <ItemMenuButton editState={editState} setEditState={setEditState} showMenu={showItemMenu} />
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+          <ItemMenuButton editState={editState} setEditState={setEditState} showMenu={showItemMenu} />
+          <ItemOverviewButton item={item} path={path} boardModifiers={boardModifiers} />
+        </div>
       </div>
       <ItemMetadata searchQuery={isMatch ? searchQuery : undefined} item={item} />
     </div>
