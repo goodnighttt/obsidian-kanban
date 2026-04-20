@@ -18,7 +18,7 @@ import { KanbanContext, SearchContext } from '../context';
 import { c } from '../helpers';
 import { EditState, EditingState, Item, isEditing } from '../types';
 import { ItemCheckbox } from './ItemCheckbox';
-import { ItemContent } from './ItemContent';
+import { extractDateTimeAndContent, ItemContent } from './ItemContent';
 import { useItemMenu } from './ItemMenu';
 import { ItemMenuButton } from './ItemMenuButton';
 import { ItemOverviewButton } from './ItemOverviewButton'; // 预览按钮
@@ -26,6 +26,8 @@ import { ItemCopyContentButton } from './ItemCopyContentButton'; // 复制内容
 import { ItemMetadata } from './MetadataTable';
 import { getItemClassModifiers } from './helpers';
 
+/** 正文（去掉日期时间行后）超过该字数时才显示预览与复制按钮，避免短标题卡片被操作列撑高 */
+const PREVIEW_AND_COPY_MIN_CONTENT_LENGTH = 16;
 
 export interface DraggableItemProps {
   item: Item;
@@ -110,6 +112,11 @@ const ItemInner = memo(function ItemInner({
     return {};
   }, [editState]);
 
+  const showPreviewAndCopyActions = useMemo(() => {
+    const { contentWithoutDateTime } = extractDateTimeAndContent(item.data.titleRaw, stateManager);
+    return Array.from(contentWithoutDateTime).length > PREVIEW_AND_COPY_MIN_CONTENT_LENGTH;
+  }, [item.data.titleRaw, stateManager]);
+
   return (
     <div
       // eslint-disable-next-line react/no-unknown-property
@@ -135,8 +142,12 @@ const ItemInner = memo(function ItemInner({
         />
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
           <ItemMenuButton editState={editState} setEditState={setEditState} showMenu={showItemMenu} />
-          <ItemOverviewButton item={item} path={path} boardModifiers={boardModifiers} />
-          <ItemCopyContentButton item={item} path={path} boardModifiers={boardModifiers} />
+          {showPreviewAndCopyActions && (
+            <>
+              <ItemOverviewButton item={item} path={path} boardModifiers={boardModifiers} />
+              <ItemCopyContentButton item={item} path={path} boardModifiers={boardModifiers} />
+            </>
+          )}
         </div>
       </div>
       <ItemMetadata searchQuery={isMatch ? searchQuery : undefined} item={item} />
