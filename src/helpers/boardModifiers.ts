@@ -228,7 +228,7 @@ export function getBoardModifiers(view: KanbanView, stateManager: StateManager):
     previewItem: (path: Path) => {
       const boardData = stateManager.state;
       const item = getEntityFromPath(boardData, path);
-      const modal = new PreviewModal(view, stateManager, item);
+      const modal = new PreviewModal(view, stateManager, item, path);
       modal.open();
     },
 
