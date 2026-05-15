@@ -163,7 +163,7 @@ function PreviewContent({ item, view, stateManager, path }: PreviewContentProps)
         view,
       }}
     >
-      <div className={c('preview-content-wrapper')}>
+      <div className={c('preview-content-wrapper')} style={{ userSelect: 'text', WebkitUserSelect: 'text' }}>
         {/* region 内容区域 */}
         <div
           style={{
@@ -201,7 +201,13 @@ function PreviewContent({ item, view, stateManager, path }: PreviewContentProps)
             /* endregion */
           ) : (
             /* region 只读模式 */
-            <div className={c('preview-readonly-area')}>
+            <div
+              className={c('preview-readonly-area')}
+              style={{
+                userSelect: 'text',
+                WebkitUserSelect: 'text',
+              }}
+            >
               {/* Markdown 渲染内容 */}
               <div className={c('preview-item-content')}>
                 <MarkdownRenderer
@@ -279,6 +285,8 @@ export class PreviewModal extends Modal {
     contentEl.style.overflowY = 'auto';
     contentEl.style.maxHeight = 'calc(80vh - 60px)';
     contentEl.style.padding = '20px';
+    contentEl.style.userSelect = 'text';
+    contentEl.style.webkitUserSelect = 'text';
     // endregion
 
     // region 创建编辑/只读按钮（与关闭按钮同行）
